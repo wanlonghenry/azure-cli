@@ -49,6 +49,7 @@ class RESOURCE(Enum):
     SignalR = 'signalr'
     WebPubSub = 'webpubsub'
     ConfluentKafka = 'confluent-cloud'
+    AppInsights = 'app-insights'
 
     @classmethod
     def value_of(cls, value):
@@ -73,6 +74,7 @@ class AUTH_TYPE(Enum):
 class CLIENT_TYPE(Enum):
     Dotnet = 'dotnet'
     DotnetConnectionString = 'dotnet-connectionString'
+    DotnetInternal = 'dotnet-internal'
     Java = 'java'
     Nodejs = 'nodejs'
     Python = 'python'
@@ -142,6 +144,7 @@ TARGET_RESOURCES = {
     RESOURCE.SignalR: '/subscriptions/{subscription}/resourceGroups/{target_resource_group}/providers/Microsoft.SignalRService/SignalR/{signalr}',
     RESOURCE.WebPubSub: '/subscriptions/{subscription}/resourceGroups/{target_resource_group}/providers/Microsoft.SignalRService/WebPubSub/{webpubsub}',
     RESOURCE.ConfluentKafka: '#',  # special target resource, no arm resource id
+    RESOURCE.AppInsights: '/subscriptions/{subscription}/resourceGroups/{target_resource_group}/providers/microsoft.insights/components/{appinsights}',
 }
 
 
@@ -620,6 +623,18 @@ TARGET_RESOURCES_PARAMS = {
             'help': 'Name of the webpubsub service',
             'placeholder': 'MyWebPubSub'
         }
+    },
+    RESOURCE.AppInsights: {
+        'target_resource_group': {
+            'options': ['--target-resource-group', '--tg'],
+            'help': 'The resource group which contains the app insights',
+            'placeholder': 'AppInsightsRG'
+        },
+        'appinsights': {
+            'options': ['--app-insights'],
+            'help': 'Name of the app insights',
+            'placeholder': 'MyAppInsights'
+        }
     }
 }
 
@@ -735,7 +750,7 @@ SUPPORTED_AUTH_TYPE = {
         RESOURCE.StorageBlob: [AUTH_TYPE.SecretAuto, AUTH_TYPE.UserAccount, AUTH_TYPE.ServicePrincipalSecret],
         RESOURCE.StorageQueue: [AUTH_TYPE.SecretAuto, AUTH_TYPE.UserAccount, AUTH_TYPE.ServicePrincipalSecret],
         RESOURCE.StorageFile: [AUTH_TYPE.SecretAuto],
-        RESOURCE.StorageTable: [AUTH_TYPE.SecretAuto],
+        RESOURCE.StorageTable: [AUTH_TYPE.SecretAuto, AUTH_TYPE.UserAccount, AUTH_TYPE.ServicePrincipalSecret],
 
         RESOURCE.KeyVault: [AUTH_TYPE.UserAccount, AUTH_TYPE.ServicePrincipalSecret],
         RESOURCE.AppConfig: [AUTH_TYPE.SecretAuto, AUTH_TYPE.UserAccount, AUTH_TYPE.ServicePrincipalSecret],
@@ -744,13 +759,14 @@ SUPPORTED_AUTH_TYPE = {
         RESOURCE.SignalR: [AUTH_TYPE.SecretAuto, AUTH_TYPE.UserAccount, AUTH_TYPE.ServicePrincipalSecret],
         RESOURCE.WebPubSub: [AUTH_TYPE.SecretAuto, AUTH_TYPE.UserAccount, AUTH_TYPE.ServicePrincipalSecret],
         RESOURCE.ConfluentKafka: [AUTH_TYPE.Secret],
+        RESOURCE.AppInsights: [AUTH_TYPE.SecretAuto]
     },
     RESOURCE.WebApp: {
-        RESOURCE.Postgres: [AUTH_TYPE.Secret, AUTH_TYPE.SystemIdentity],
-        RESOURCE.PostgresFlexible: [AUTH_TYPE.Secret, AUTH_TYPE.SystemIdentity],
+        RESOURCE.Postgres: [AUTH_TYPE.Secret, AUTH_TYPE.SystemIdentity, AUTH_TYPE.UserIdentity, AUTH_TYPE.ServicePrincipalSecret],
+        RESOURCE.PostgresFlexible: [AUTH_TYPE.Secret, AUTH_TYPE.SystemIdentity, AUTH_TYPE.UserIdentity, AUTH_TYPE.ServicePrincipalSecret],
         RESOURCE.Mysql: [AUTH_TYPE.Secret],
-        RESOURCE.MysqlFlexible: [AUTH_TYPE.Secret, AUTH_TYPE.SystemIdentity],
-        RESOURCE.Sql: [AUTH_TYPE.Secret, AUTH_TYPE.SystemIdentity],
+        RESOURCE.MysqlFlexible: [AUTH_TYPE.Secret, AUTH_TYPE.SystemIdentity, AUTH_TYPE.UserIdentity, AUTH_TYPE.ServicePrincipalSecret],
+        RESOURCE.Sql: [AUTH_TYPE.Secret, AUTH_TYPE.SystemIdentity, AUTH_TYPE.UserIdentity, AUTH_TYPE.ServicePrincipalSecret],
         RESOURCE.Redis: [AUTH_TYPE.SecretAuto],
         RESOURCE.RedisEnterprise: [AUTH_TYPE.SecretAuto],
 
@@ -763,7 +779,7 @@ SUPPORTED_AUTH_TYPE = {
         RESOURCE.StorageBlob: [AUTH_TYPE.SystemIdentity, AUTH_TYPE.SecretAuto, AUTH_TYPE.UserIdentity, AUTH_TYPE.ServicePrincipalSecret],
         RESOURCE.StorageQueue: [AUTH_TYPE.SystemIdentity, AUTH_TYPE.SecretAuto, AUTH_TYPE.UserIdentity, AUTH_TYPE.ServicePrincipalSecret],
         RESOURCE.StorageFile: [AUTH_TYPE.SecretAuto],
-        RESOURCE.StorageTable: [AUTH_TYPE.SecretAuto],
+        RESOURCE.StorageTable: [AUTH_TYPE.SystemIdentity, AUTH_TYPE.SecretAuto, AUTH_TYPE.UserIdentity, AUTH_TYPE.ServicePrincipalSecret],
 
         RESOURCE.KeyVault: [AUTH_TYPE.SystemIdentity, AUTH_TYPE.UserIdentity, AUTH_TYPE.ServicePrincipalSecret],
         RESOURCE.AppConfig: [AUTH_TYPE.SystemIdentity, AUTH_TYPE.SecretAuto, AUTH_TYPE.UserIdentity, AUTH_TYPE.ServicePrincipalSecret],
@@ -772,13 +788,14 @@ SUPPORTED_AUTH_TYPE = {
         RESOURCE.SignalR: [AUTH_TYPE.SystemIdentity, AUTH_TYPE.SecretAuto, AUTH_TYPE.UserIdentity, AUTH_TYPE.ServicePrincipalSecret],
         RESOURCE.WebPubSub: [AUTH_TYPE.SystemIdentity, AUTH_TYPE.SecretAuto, AUTH_TYPE.UserIdentity, AUTH_TYPE.ServicePrincipalSecret],
         RESOURCE.ConfluentKafka: [AUTH_TYPE.Secret],
+        RESOURCE.AppInsights: [AUTH_TYPE.SecretAuto],
     },
     RESOURCE.SpringCloud: {
-        RESOURCE.Postgres: [AUTH_TYPE.Secret, AUTH_TYPE.SystemIdentity],
-        RESOURCE.PostgresFlexible: [AUTH_TYPE.Secret, AUTH_TYPE.SystemIdentity],
+        RESOURCE.Postgres: [AUTH_TYPE.Secret, AUTH_TYPE.SystemIdentity, AUTH_TYPE.UserIdentity, AUTH_TYPE.ServicePrincipalSecret],
+        RESOURCE.PostgresFlexible: [AUTH_TYPE.Secret, AUTH_TYPE.SystemIdentity, AUTH_TYPE.UserIdentity, AUTH_TYPE.ServicePrincipalSecret],
         RESOURCE.Mysql: [AUTH_TYPE.Secret],
-        RESOURCE.MysqlFlexible: [AUTH_TYPE.Secret, AUTH_TYPE.SystemIdentity],
-        RESOURCE.Sql: [AUTH_TYPE.Secret, AUTH_TYPE.SystemIdentity],
+        RESOURCE.MysqlFlexible: [AUTH_TYPE.Secret, AUTH_TYPE.SystemIdentity, AUTH_TYPE.UserIdentity, AUTH_TYPE.ServicePrincipalSecret],
+        RESOURCE.Sql: [AUTH_TYPE.Secret, AUTH_TYPE.SystemIdentity, AUTH_TYPE.UserIdentity, AUTH_TYPE.ServicePrincipalSecret],
         RESOURCE.Redis: [AUTH_TYPE.SecretAuto],
         RESOURCE.RedisEnterprise: [AUTH_TYPE.SecretAuto],
 
@@ -791,7 +808,7 @@ SUPPORTED_AUTH_TYPE = {
         RESOURCE.StorageBlob: [AUTH_TYPE.SystemIdentity, AUTH_TYPE.SecretAuto, AUTH_TYPE.UserIdentity, AUTH_TYPE.ServicePrincipalSecret],
         RESOURCE.StorageQueue: [AUTH_TYPE.SystemIdentity, AUTH_TYPE.SecretAuto, AUTH_TYPE.UserIdentity, AUTH_TYPE.ServicePrincipalSecret],
         RESOURCE.StorageFile: [AUTH_TYPE.SecretAuto],
-        RESOURCE.StorageTable: [AUTH_TYPE.SecretAuto],
+        RESOURCE.StorageTable: [AUTH_TYPE.SystemIdentity, AUTH_TYPE.SecretAuto, AUTH_TYPE.UserIdentity, AUTH_TYPE.ServicePrincipalSecret],
 
         RESOURCE.KeyVault: [AUTH_TYPE.SystemIdentity, AUTH_TYPE.UserIdentity, AUTH_TYPE.ServicePrincipalSecret],
         RESOURCE.AppConfig: [AUTH_TYPE.SystemIdentity, AUTH_TYPE.SecretAuto, AUTH_TYPE.UserIdentity, AUTH_TYPE.ServicePrincipalSecret],
@@ -800,6 +817,7 @@ SUPPORTED_AUTH_TYPE = {
         RESOURCE.SignalR: [AUTH_TYPE.SystemIdentity, AUTH_TYPE.SecretAuto, AUTH_TYPE.UserIdentity, AUTH_TYPE.ServicePrincipalSecret],
         RESOURCE.WebPubSub: [AUTH_TYPE.SystemIdentity, AUTH_TYPE.SecretAuto, AUTH_TYPE.UserIdentity, AUTH_TYPE.ServicePrincipalSecret],
         RESOURCE.ConfluentKafka: [AUTH_TYPE.Secret],
+        RESOURCE.AppInsights: [AUTH_TYPE.SecretAuto],
     },
     RESOURCE.KubernetesCluster: {
         RESOURCE.Postgres: [AUTH_TYPE.Secret],
@@ -819,7 +837,7 @@ SUPPORTED_AUTH_TYPE = {
         RESOURCE.StorageBlob: [AUTH_TYPE.SecretAuto, AUTH_TYPE.ServicePrincipalSecret],
         RESOURCE.StorageQueue: [AUTH_TYPE.SecretAuto, AUTH_TYPE.ServicePrincipalSecret],
         RESOURCE.StorageFile: [AUTH_TYPE.SecretAuto],
-        RESOURCE.StorageTable: [AUTH_TYPE.SecretAuto],
+        RESOURCE.StorageTable: [AUTH_TYPE.SecretAuto, AUTH_TYPE.ServicePrincipalSecret],
 
         RESOURCE.KeyVault: [AUTH_TYPE.ServicePrincipalSecret],
         RESOURCE.AppConfig: [AUTH_TYPE.SecretAuto, AUTH_TYPE.ServicePrincipalSecret],
@@ -828,13 +846,14 @@ SUPPORTED_AUTH_TYPE = {
         RESOURCE.SignalR: [AUTH_TYPE.SecretAuto, AUTH_TYPE.ServicePrincipalSecret],
         RESOURCE.WebPubSub: [AUTH_TYPE.SecretAuto, AUTH_TYPE.ServicePrincipalSecret],
         RESOURCE.ConfluentKafka: [AUTH_TYPE.Secret],
+        RESOURCE.AppInsights: [AUTH_TYPE.SecretAuto],
     },
     RESOURCE.ContainerApp: {
-        RESOURCE.Postgres: [AUTH_TYPE.Secret, AUTH_TYPE.SystemIdentity],
-        RESOURCE.PostgresFlexible: [AUTH_TYPE.Secret, AUTH_TYPE.SystemIdentity],
+        RESOURCE.Postgres: [AUTH_TYPE.Secret, AUTH_TYPE.SystemIdentity, AUTH_TYPE.UserIdentity, AUTH_TYPE.ServicePrincipalSecret],
+        RESOURCE.PostgresFlexible: [AUTH_TYPE.Secret, AUTH_TYPE.SystemIdentity, AUTH_TYPE.UserIdentity, AUTH_TYPE.ServicePrincipalSecret],
         RESOURCE.Mysql: [AUTH_TYPE.Secret],
-        RESOURCE.MysqlFlexible: [AUTH_TYPE.Secret, AUTH_TYPE.SystemIdentity],
-        RESOURCE.Sql: [AUTH_TYPE.Secret, AUTH_TYPE.SystemIdentity],
+        RESOURCE.MysqlFlexible: [AUTH_TYPE.Secret, AUTH_TYPE.SystemIdentity, AUTH_TYPE.UserIdentity, AUTH_TYPE.ServicePrincipalSecret],
+        RESOURCE.Sql: [AUTH_TYPE.Secret, AUTH_TYPE.SystemIdentity, AUTH_TYPE.UserIdentity, AUTH_TYPE.ServicePrincipalSecret],
         RESOURCE.Redis: [AUTH_TYPE.SecretAuto],
         RESOURCE.RedisEnterprise: [AUTH_TYPE.SecretAuto],
 
@@ -847,7 +866,7 @@ SUPPORTED_AUTH_TYPE = {
         RESOURCE.StorageBlob: [AUTH_TYPE.SystemIdentity, AUTH_TYPE.SecretAuto, AUTH_TYPE.UserIdentity, AUTH_TYPE.ServicePrincipalSecret],
         RESOURCE.StorageQueue: [AUTH_TYPE.SystemIdentity, AUTH_TYPE.SecretAuto, AUTH_TYPE.UserIdentity, AUTH_TYPE.ServicePrincipalSecret],
         RESOURCE.StorageFile: [AUTH_TYPE.SecretAuto],
-        RESOURCE.StorageTable: [AUTH_TYPE.SecretAuto],
+        RESOURCE.StorageTable: [AUTH_TYPE.SystemIdentity, AUTH_TYPE.SecretAuto, AUTH_TYPE.UserIdentity, AUTH_TYPE.ServicePrincipalSecret],
 
         RESOURCE.KeyVault: [AUTH_TYPE.SystemIdentity, AUTH_TYPE.UserIdentity, AUTH_TYPE.ServicePrincipalSecret],
         RESOURCE.AppConfig: [AUTH_TYPE.SystemIdentity, AUTH_TYPE.SecretAuto, AUTH_TYPE.UserIdentity, AUTH_TYPE.ServicePrincipalSecret],
@@ -856,6 +875,7 @@ SUPPORTED_AUTH_TYPE = {
         RESOURCE.SignalR: [AUTH_TYPE.SystemIdentity, AUTH_TYPE.SecretAuto, AUTH_TYPE.UserIdentity, AUTH_TYPE.ServicePrincipalSecret],
         RESOURCE.WebPubSub: [AUTH_TYPE.SystemIdentity, AUTH_TYPE.SecretAuto, AUTH_TYPE.UserIdentity, AUTH_TYPE.ServicePrincipalSecret],
         RESOURCE.ConfluentKafka: [AUTH_TYPE.Secret],
+        RESOURCE.AppInsights: [AUTH_TYPE.SecretAuto],
     },
 }
 SUPPORTED_AUTH_TYPE[RESOURCE.SpringCloudDeprecated] = SUPPORTED_AUTH_TYPE[RESOURCE.SpringCloud]
@@ -868,6 +888,7 @@ SUPPORTED_CLIENT_TYPE = {
     RESOURCE.WebApp: {
         RESOURCE.Postgres: [
             CLIENT_TYPE.Dotnet,
+            CLIENT_TYPE.DotnetInternal,
             CLIENT_TYPE.Java,
             CLIENT_TYPE.Python,
             CLIENT_TYPE.Nodejs,
@@ -880,6 +901,7 @@ SUPPORTED_CLIENT_TYPE = {
         ],
         RESOURCE.PostgresFlexible: [
             CLIENT_TYPE.Dotnet,
+            CLIENT_TYPE.DotnetInternal,
             CLIENT_TYPE.Java,
             CLIENT_TYPE.Python,
             CLIENT_TYPE.Nodejs,
@@ -892,6 +914,7 @@ SUPPORTED_CLIENT_TYPE = {
         ],
         RESOURCE.Mysql: [
             CLIENT_TYPE.Dotnet,
+            CLIENT_TYPE.DotnetInternal,
             CLIENT_TYPE.Java,
             CLIENT_TYPE.Python,
             CLIENT_TYPE.Nodejs,
@@ -904,6 +927,7 @@ SUPPORTED_CLIENT_TYPE = {
         ],
         RESOURCE.MysqlFlexible: [
             CLIENT_TYPE.Dotnet,
+            CLIENT_TYPE.DotnetInternal,
             CLIENT_TYPE.Java,
             CLIENT_TYPE.Python,
             CLIENT_TYPE.Nodejs,
@@ -916,6 +940,7 @@ SUPPORTED_CLIENT_TYPE = {
         ],
         RESOURCE.Sql: [
             CLIENT_TYPE.Dotnet,
+            CLIENT_TYPE.DotnetInternal,
             CLIENT_TYPE.Java,
             CLIENT_TYPE.Python,
             CLIENT_TYPE.Nodejs,
@@ -928,6 +953,7 @@ SUPPORTED_CLIENT_TYPE = {
         ],
         RESOURCE.Redis: [
             CLIENT_TYPE.Dotnet,
+            CLIENT_TYPE.DotnetInternal,
             CLIENT_TYPE.Java,
             CLIENT_TYPE.Python,
             CLIENT_TYPE.Nodejs,
@@ -937,6 +963,7 @@ SUPPORTED_CLIENT_TYPE = {
         ],
         RESOURCE.RedisEnterprise: [
             CLIENT_TYPE.Dotnet,
+            CLIENT_TYPE.DotnetInternal,
             CLIENT_TYPE.Java,
             CLIENT_TYPE.Python,
             CLIENT_TYPE.Nodejs,
@@ -946,6 +973,7 @@ SUPPORTED_CLIENT_TYPE = {
         ],
         RESOURCE.CosmosCassandra: [
             CLIENT_TYPE.Dotnet,
+            CLIENT_TYPE.DotnetInternal,
             CLIENT_TYPE.Java,
             CLIENT_TYPE.Python,
             CLIENT_TYPE.Nodejs,
@@ -955,6 +983,7 @@ SUPPORTED_CLIENT_TYPE = {
         ],
         RESOURCE.CosmosGremlin: [
             CLIENT_TYPE.Dotnet,
+            CLIENT_TYPE.DotnetInternal,
             CLIENT_TYPE.Java,
             CLIENT_TYPE.Python,
             CLIENT_TYPE.Nodejs,
@@ -963,6 +992,7 @@ SUPPORTED_CLIENT_TYPE = {
         ],
         RESOURCE.CosmosMongo: [
             CLIENT_TYPE.Dotnet,
+            CLIENT_TYPE.DotnetInternal,
             CLIENT_TYPE.Java,
             CLIENT_TYPE.Nodejs,
             CLIENT_TYPE.Go,
@@ -971,6 +1001,7 @@ SUPPORTED_CLIENT_TYPE = {
         ],
         RESOURCE.CosmosTable: [
             CLIENT_TYPE.Dotnet,
+            CLIENT_TYPE.DotnetInternal,
             CLIENT_TYPE.Java,
             CLIENT_TYPE.Python,
             CLIENT_TYPE.Nodejs,
@@ -979,6 +1010,7 @@ SUPPORTED_CLIENT_TYPE = {
         ],
         RESOURCE.CosmosSql: [
             CLIENT_TYPE.Dotnet,
+            CLIENT_TYPE.DotnetInternal,
             CLIENT_TYPE.Java,
             CLIENT_TYPE.Python,
             CLIENT_TYPE.Nodejs,
@@ -987,6 +1019,7 @@ SUPPORTED_CLIENT_TYPE = {
         ],
         RESOURCE.StorageBlob: [
             CLIENT_TYPE.Dotnet,
+            CLIENT_TYPE.DotnetInternal,
             CLIENT_TYPE.Java,
             CLIENT_TYPE.Python,
             CLIENT_TYPE.Nodejs,
@@ -995,6 +1028,7 @@ SUPPORTED_CLIENT_TYPE = {
         ],
         RESOURCE.StorageQueue: [
             CLIENT_TYPE.Dotnet,
+            CLIENT_TYPE.DotnetInternal,
             CLIENT_TYPE.Java,
             CLIENT_TYPE.Python,
             CLIENT_TYPE.Nodejs,
@@ -1003,6 +1037,7 @@ SUPPORTED_CLIENT_TYPE = {
         ],
         RESOURCE.StorageFile: [
             CLIENT_TYPE.Dotnet,
+            CLIENT_TYPE.DotnetInternal,
             CLIENT_TYPE.Java,
             CLIENT_TYPE.Python,
             CLIENT_TYPE.Nodejs,
@@ -1013,6 +1048,7 @@ SUPPORTED_CLIENT_TYPE = {
         ],
         RESOURCE.StorageTable: [
             CLIENT_TYPE.Dotnet,
+            CLIENT_TYPE.DotnetInternal,
             CLIENT_TYPE.Java,
             CLIENT_TYPE.Python,
             CLIENT_TYPE.Nodejs,
@@ -1020,6 +1056,7 @@ SUPPORTED_CLIENT_TYPE = {
         ],
         RESOURCE.KeyVault: [
             CLIENT_TYPE.Dotnet,
+            CLIENT_TYPE.DotnetInternal,
             CLIENT_TYPE.Java,
             CLIENT_TYPE.Python,
             CLIENT_TYPE.Nodejs,
@@ -1028,6 +1065,7 @@ SUPPORTED_CLIENT_TYPE = {
         ],
         RESOURCE.AppConfig: [
             CLIENT_TYPE.Dotnet,
+            CLIENT_TYPE.DotnetInternal,
             CLIENT_TYPE.Java,
             CLIENT_TYPE.Python,
             CLIENT_TYPE.Nodejs,
@@ -1035,6 +1073,7 @@ SUPPORTED_CLIENT_TYPE = {
         ],
         RESOURCE.EventHub: [
             CLIENT_TYPE.Dotnet,
+            CLIENT_TYPE.DotnetInternal,
             CLIENT_TYPE.Java,
             CLIENT_TYPE.Python,
             CLIENT_TYPE.Nodejs,
@@ -1045,6 +1084,7 @@ SUPPORTED_CLIENT_TYPE = {
         ],
         RESOURCE.ServiceBus: [
             CLIENT_TYPE.Dotnet,
+            CLIENT_TYPE.DotnetInternal,
             CLIENT_TYPE.Java,
             CLIENT_TYPE.Python,
             CLIENT_TYPE.Nodejs,
@@ -1054,10 +1094,12 @@ SUPPORTED_CLIENT_TYPE = {
         ],
         RESOURCE.SignalR: [
             CLIENT_TYPE.Dotnet,
+            CLIENT_TYPE.DotnetInternal,
             CLIENT_TYPE.Blank
         ],
         RESOURCE.WebPubSub: [
             CLIENT_TYPE.Dotnet,
+            CLIENT_TYPE.DotnetInternal,
             CLIENT_TYPE.Java,
             CLIENT_TYPE.Python,
             CLIENT_TYPE.Nodejs,
@@ -1065,10 +1107,20 @@ SUPPORTED_CLIENT_TYPE = {
         ],
         RESOURCE.ConfluentKafka: [
             CLIENT_TYPE.Dotnet,
+            CLIENT_TYPE.DotnetInternal,
             CLIENT_TYPE.Java,
             CLIENT_TYPE.Python,
             CLIENT_TYPE.Go,
             CLIENT_TYPE.SpringBoot,
+            CLIENT_TYPE.Blank
+        ],
+        RESOURCE.AppInsights: [
+            CLIENT_TYPE.Dotnet,
+            CLIENT_TYPE.DotnetInternal,
+            CLIENT_TYPE.Java,
+            CLIENT_TYPE.Python,
+            CLIENT_TYPE.Nodejs,
+            CLIENT_TYPE.Go,
             CLIENT_TYPE.Blank
         ]
     }

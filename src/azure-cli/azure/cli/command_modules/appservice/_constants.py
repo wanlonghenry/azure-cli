@@ -33,6 +33,7 @@ GITHUB_OAUTH_SCOPES = [
 ]
 LOGICAPP_KIND = "workflowapp"
 FUNCTIONAPP_KIND = "functionapp"
+LINUXAPP_KIND = "linux"
 DOTNET_REFERENCES_DIR_IN_ZIP = ".az-references"
 
 
@@ -64,6 +65,8 @@ GENERATE_RANDOM_APP_NAMES = os.path.abspath(os.path.join(os.path.abspath(__file_
                                                          '../resources/GenerateRandomAppNames.json'))
 
 PUBLIC_CLOUD = "AzureCloud"
+
+VERSION_2022_09_01 = "2022-09-01"
 
 LINUX_GITHUB_ACTIONS_WORKFLOW_TEMPLATE_PATH = {
     'node': 'AppService/linux/nodejs-webapp-on-azure.yml',
@@ -98,3 +101,12 @@ WINDOWS_FUNCTIONAPP_GITHUB_ACTIONS_WORKFLOW_TEMPLATE_PATH = {
 
 DEFAULT_CENTAURI_IMAGE = 'mcr.microsoft.com/azure-functions/dotnet7-quickstart-demo:1.0'
 ACR_IMAGE_SUFFIX = ".azurecr.io"
+
+RUNTIME_STATUS_TEXT_MAP = {
+    "BuildInProgress": "Building the app...",
+    "BuildSuccessful": "Build successful.",
+    "BuildFailed": "Build failed.",
+    "RuntimeStarting": "Starting the site...",
+    "RuntimeSuccessful": "Site started successfully.",
+    "RuntimeFailed": "Site failed to start."
+}
